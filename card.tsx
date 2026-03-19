@@ -1,25 +1,83 @@
-import * as React from "react"
-import { cn } from "./button"
+import { Slot } from "@radix-ui/react-slot"
+import { cva, type VariantProps } from "class-variance-authority"
 
-export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: "default" | "secondary" | "destructive" | "outline" | "essential" | "phase";
-}
+import { cn } from "@/lib/utils"
+import { Separator } from "@/components/ui/separator"
 
-function Badge({ className, variant = "default", ...props }: BadgeProps) {
-  const baseStyles = "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 tracking-wide font-display uppercase";
-  
-  const variants = {
-    default: "border-transparent bg-primary text-primary-foreground shadow-sm",
-    secondary: "border-transparent bg-secondary text-secondary-foreground shadow-sm",
-    destructive: "border-transparent bg-destructive text-destructive-foreground shadow-sm",
-    outline: "text-foreground border-white/20 bg-white/5 backdrop-blur-sm",
-    essential: "border-amber-500/50 bg-gradient-to-r from-amber-600/20 to-yellow-500/20 text-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.2)]",
-    phase: "border-blue-500/30 bg-blue-500/10 text-blue-300",
-  };
+const buttonGroupVariants = cva(
+  "flex w-fit items-stretch has-[>[data-slot=button-group]]:gap-2 [&>*]:focus-visible:relative [&>*]:focus-visible:z-10 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-r-md [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit [&>input]:flex-1",
+  {
+    variants: {
+      orientation: {
+        horizontal:
+          "[&>*:not(:first-child)]:rounded-l-none [&>*:not(:first-child)]:border-l-0 [&>*:not(:last-child)]:rounded-r-none",
+        vertical:
+          "flex-col [&>*:not(:first-child)]:rounded-t-none [&>*:not(:first-child)]:border-t-0 [&>*:not(:last-child)]:rounded-b-none",
+      },
+    },
+    defaultVariants: {
+      orientation: "horizontal",
+    },
+  }
+)
 
+function ButtonGroup({
+  className,
+  orientation,
+  ...props
+}: React.ComponentProps<"div"> & VariantProps<typeof buttonGroupVariants>) {
   return (
-    <div className={cn(baseStyles, variants[variant], className)} {...props} />
+    <div
+      role="group"
+      data-slot="button-group"
+      data-orientation={orientation}
+      className={cn(buttonGroupVariants({ orientation }), className)}
+      {...props}
+    />
   )
 }
 
-export { Badge }
+function ButtonGroupText({
+  className,
+  asChild = false,
+  ...props
+}: React.ComponentProps<"div"> & {
+  asChild?: boolean
+}) {
+  const Comp = asChild ? Slot : "div"
+
+  return (
+    <Comp
+      className={cn(
+        "bg-muted shadow-xs flex items-center gap-2 rounded-md border px-4 text-sm font-medium [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function ButtonGroupSeparator({
+  className,
+  orientation = "vertical",
+  ...props
+}: React.ComponentProps<typeof Separator>) {
+  return (
+    <Separator
+      data-slot="button-group-separator"
+      orientation={orientation}
+      className={cn(
+        "bg-input relative !m-0 self-stretch data-[orientation=vertical]:h-auto",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+export {
+  ButtonGroup,
+  ButtonGroupSeparator,
+  ButtonGroupText,
+  buttonGroupVariants,
+}

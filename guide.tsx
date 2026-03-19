@@ -1,19 +1,20 @@
-import * as React from "react"
+import { useState, useCallback } from "react";
 
-const MOBILE_BREAKPOINT = 768
+const KEY = (id: string) => `mcu-watched:${id}`;
 
-export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+export function useWatchedItem(id: string) {
+  const [isWatched, setIsWatched] = useState<boolean>(
+    () => localStorage.getItem(KEY(id)) === "1"
+  );
 
-  React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    }
-    mql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    return () => mql.removeEventListener("change", onChange)
-  }, [])
+  const toggle = useCallback(() => {
+    setIsWatched(prev => {
+      const next = !prev;
+      if (next) localStorage.setItem(KEY(id), "1");
+      else localStorage.removeItem(KEY(id));
+      return next;
+    });
+  }, [id]);
 
-  return !!isMobile
+  return { isWatched, toggle };
 }
